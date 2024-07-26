@@ -1,24 +1,25 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
 def get_exchange_rates():
     url = 'https://alanchand.com/en/currencies-price'
     
-    # Set up Selenium with ChromeDriver
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    service = Service('C:/Users/hassa/OneDrive/Documents/chromedriver.exe')  # Update with your ChromeDriver path
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.binary_location = "usr/bin/google-chrome"
+    service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
     
-    # Load the webpage
     driver.get(url)
     
-    # Wait for the elements to be present
     try:
         WebDriverWait(driver, 3).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, "data"))
@@ -28,23 +29,20 @@ def get_exchange_rates():
         driver.quit()
         return {}
     
-    # Get the page source after JavaScript has rendered
     page_source = driver.page_source
     
-    # Parse the page source with BeautifulSoup
     soup = BeautifulSoup(page_source, 'html.parser')
     
     currency_rates = {}
-    for rate in soup.find_all("a", class_="data"):  # Adjust the class name as needed
-        currency_element = rate.find("div", class_="title")  # Adjust the class name as needed
-        value_element = rate.find("div", class_="buy")  # Adjust the class name as needed
+    for rate in soup.find_all("a", class_="data"):
+        currency_element = rate.find("div", class_="title")
+        value_element = rate.find("div", class_="buy")
         
         if currency_element and value_element:
             currency = currency_element.text.strip()
             value = value_element.text.strip()
             currency_rates[currency] = value
     
-    # Close the browser
     driver.quit()
     
     return currency_rates
@@ -52,22 +50,18 @@ def get_exchange_rates():
 def get_gold_rates():
     url = 'https://alanchand.com/en/gold-price'
     
-    # Set up Selenium with ChromeDriver
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    service = Service('C:/Users/hassa/OneDrive/Documents/chromedriver.exe')  # Update with your ChromeDriver path
+    chrome_options.add_argument("--headless")
+    service = Service('C:/Users/hassa/OneDrive/Documents/chromedriver.exe')
     driver = webdriver.Chrome(service=service, options=chrome_options)
     
     try:
-        # Load the webpage
         driver.get(url)
         
-        # Wait for the elements to be present
         WebDriverWait(driver, 1).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, "body"))
         )
         
-        # Get the page source after JavaScript has rendered
         page_source = driver.page_source
         
     except Exception as e:
@@ -75,10 +69,8 @@ def get_gold_rates():
         return {}
     
     finally:
-        # Close the browser
         driver.quit()
     
-    # Parse the page source with BeautifulSoup
     soup = BeautifulSoup(page_source, 'html.parser')
     
     gold_rates = {}
@@ -94,22 +86,18 @@ def get_gold_rates():
 def get_crypto_rates():
     url = 'https://alanchand.com/en/crypto-price'
     
-    # Set up Selenium with ChromeDriver
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    service = Service('C:/Users/hassa/OneDrive/Documents/chromedriver.exe')  # Update with your ChromeDriver path
+    chrome_options.add_argument("--headless")
+    service = Service('C:/Users/hassa/OneDrive/Documents/chromedriver.exe')
     driver = webdriver.Chrome(service=service, options=chrome_options)
     
     try:
-        # Load the webpage
         driver.get(url)
         
-        # Wait for the elements to be present
         WebDriverWait(driver, 1).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, "body"))
         )
         
-        # Get the page source after JavaScript has rendered
         page_source = driver.page_source
         
     except Exception as e:
@@ -117,10 +105,8 @@ def get_crypto_rates():
         return {}
     
     finally:
-        # Close the browser
         driver.quit()
     
-    # Parse the page source with BeautifulSoup
     soup = BeautifulSoup(page_source, 'html.parser')
     
     crypto_rates = {}
@@ -137,12 +123,3 @@ def get_crypto_rates():
             print(f"Missing data in rate: {rate}")
     
     return crypto_rates
-
-# Example usage
-print(get_crypto_rates())
-
-# Example usage
-print(get_gold_rates())
-
-# Test the function
-print(get_exchange_rates())
